@@ -1,6 +1,8 @@
 #!/bin/bash
 
-redshift -O 4500 -b 0.8 -P
+NightModeTemp="$(cat ~/scripts/config/NightModeTemp)"
 
-echo 1 > ~/scripts/config/nightmode
+redshift -O "$NightModeTemp" -b 0.8 -P
+
+echo 1 > ~/scripts/config/NightModeOn
 notify-send -t 1000 "Night Mode ON"
