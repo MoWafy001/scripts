@@ -2,6 +2,7 @@
 
 MON="eDP-1"    # Discover monitor name with: xrandr | grep " connected"
 STEP=5          # Step Up/Down brightnes by: 5 = ".05", 10 = ".10", etc.
+NIGHT_MODE="$(cat ~/scripts/config/nightmode)"
 
 CurrBright=$( xrandr --verbose --current | grep ^"$MON" -A5 | tail -n1 )
 CurrBright="${CurrBright##* }"  # Get brightness level with decimal place
@@ -28,7 +29,11 @@ else
     CurrBright=".${MathBright:0:2}"
 fi
 
-xrandr --output "$MON" --brightness "$CurrBright"   # Set new brightness
+if [[ "$NIGHT_MODE" -eq 1 ]] ; then
+  redshift -O 4500 -b "$CurrBright" -P
+else
+  redshift -O 6500 -b "$CurrBright" -P
+fi
 
 # Display current brightness
 notify-send -t 1000 $( xrandr --verbose --current | grep ^"$MON" -A5 | tail -n1 )
