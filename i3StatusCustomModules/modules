@@ -1,0 +1,29 @@
+#!/bin/sh
+
+
+# the list of modules to be loaded
+modules=" 
+  warpLoss \
+  "
+
+
+MODULES_DIR="~/scripts/i3StatusCustomModules"
+
+
+# remove extra and trailing spaces
+modules=$(echo $modules | \
+  sed -E "s/ +/ /g" | \
+  sed -E "s/^ | $//g" \
+)
+
+
+JSON=""
+# join the output of the modules
+for module in $modules; do
+  modulePath="$MODULES_DIR/$module"
+  moduleJSON="$(eval $modulePath)"
+  JSON="${JSON}${moduleJSON}"
+done
+
+
+echo $JSON
