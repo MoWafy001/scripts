@@ -21,8 +21,8 @@ modules=$(echo $modules | \
 JSON=""
 # join the output of the modules
 for module in $modules; do
-  modulePath="$MODULES_DIR/$module"
-  moduleJSON="$(eval $modulePath)"
+  moduleCommand="dash -c $MODULES_DIR/$module"
+  moduleJSON="$(timeout 0.5s $moduleCommand)"
   JSON="${JSON}${moduleJSON}"
 done
 
