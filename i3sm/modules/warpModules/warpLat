@@ -1,0 +1,17 @@
+#!/bin/sh
+
+lat="$(\
+    warp-cli warp-stats | \
+    sed "4q;d" | \
+    grep --only-matching -E "([[:digit:]]).+" \
+  )"
+
+[ "$lat" = "" ] && echo "$lat" && exit 0
+
+echo $(\
+    echo "\
+      { \
+        \"full_text\": \"WLat $lat\", \
+        \"color\": \"#FFFF00\" \
+      }, \
+    " | sed -E "s/ {2,}//g")

@@ -1,0 +1,39 @@
+#!/bin/sh
+
+warpStatus="$( \
+  warp-cli status | \
+  grep "Status update" | \
+  sed s"/Status update: //" \
+  )"
+
+
+[ $warpStatus = "Disconnected" ] && exit 0
+
+
+# the list of modules to be loaded
+modules=" 
+  warpLat \
+  warpLoss \
+  "
+
+
+MODULES_DIR="~/scripts/i3sm/modules/warpModules"
+
+
+# remove extra and trailing spaces
+modules=$(echo $modules | \
+  sed -E "s/ +/ /g" | \
+  sed -E "s/^ | $//g" \
+)
+
+
+JSON=""
+# join the output of the modules
+for module in $modules; do
+  moduleCommand="dash -c $MODULES_DIR/$module"
+  moduleJSON="$(timeout 0.5s $moduleCommand)"
+  JSON="${JSON}${moduleJSON}"
+done
+
+
+echo $JSON
