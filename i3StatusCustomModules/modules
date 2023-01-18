@@ -4,6 +4,7 @@
 # the list of modules to be loaded
 modules=" 
   fuklife \
+  warpLat \
   warpLoss \
   "
 

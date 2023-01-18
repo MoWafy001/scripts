@@ -2,7 +2,8 @@
 
 loss="$(\
     warp-cli warp-stats | \
-    sed "4q;d" | \
+    sed "5q;d" | \
+    sed s"/.$//" | \
     grep --only-matching -E "([[:digit:]]).+" \
   )"
 
@@ -11,7 +12,7 @@ loss="$(\
 echo $(\
     echo "\
       { \
-        \"full_text\": \"WL $loss\", \
-        \"color\": \"#FFFF00\" \
+        \"full_text\": \"WLoss $loss\", \
+        \"color\": \"#FF0000\" \
       }, \
     " | sed -E "s/ {2,}//g")
