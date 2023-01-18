@@ -1,14 +1,23 @@
 #!/bin/sh
 
+warpStatus="$( \
+  warp-cli status | \
+  grep "Status update" | \
+  sed s"/Status update: //" \
+  )"
+
+
+[ $warpStatus = "Disconnected" ] && exit 0
+
 
 # the list of modules to be loaded
 modules=" 
-  fuklife \
-  warp \
+  warpLat \
+  warpLoss \
   "
 
 
-MODULES_DIR="~/scripts/i3StatusCustomModules"
+MODULES_DIR="~/scripts/i3StatusCustomModules/warpModules"
 
 
 # remove extra and trailing spaces
