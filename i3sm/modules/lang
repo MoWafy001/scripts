@@ -1,0 +1,5 @@
+#!/bin/sh
+
+lang="$(setxkbmap -query | sed "3q;d" | sed 's/layout:     //')"
+
+echo "{ \"full_text\": \"$lang\" },"

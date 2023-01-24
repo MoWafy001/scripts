@@ -5,6 +5,7 @@
 modules=" 
   fuklife \
   warp \
+  lang \
   "
 
 
