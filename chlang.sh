@@ -5,9 +5,9 @@ layout=$(
       sed "s/layout:    //"
 )
 
-if [ $layout == 'us' ];
+if [ $layout == 'us,ar' ];
 then
-  setxkbmap ar
+  setxkbmap ar,us
 else
-  setxkbmap us
+  setxkbmap us,ar
 fi
