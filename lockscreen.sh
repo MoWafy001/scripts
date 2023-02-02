@@ -66,4 +66,6 @@ lock_sc() {
 
 if should_lock; then
   lock_sc
+else
+  xset s reset
 fi
