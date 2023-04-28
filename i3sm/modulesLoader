@@ -6,6 +6,7 @@ modules="
   fuklife \
   warp \
   lang \
+  uptime \
   "
 
 
