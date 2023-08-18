@@ -1,0 +1,7 @@
+#!/bin/sh
+
+message="coffee overload"
+
+echo "{ \
+\"full_text\": \"$message\", \"color\": \"#FFA500\" \
+},"
