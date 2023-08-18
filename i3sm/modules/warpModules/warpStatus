@@ -1,0 +1,17 @@
+#!/bin/sh
+
+warpStatus="$( \
+    warp-cli status | \
+    grep "Status update: " | \
+    sed "s/Status update: //g" | \
+    sed 's/ .*//' | \
+    sed 's/\.//g' \
+    )"
+
+echo $(\
+    echo "\
+      { \
+        \"full_text\": \"WStat $warpStatus\", \
+        \"color\": \"#FFFFFF\" \
+      }, \
+    " | sed -E "s/ {2,}//g")
