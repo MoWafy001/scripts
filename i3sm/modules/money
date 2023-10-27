@@ -1,0 +1,27 @@
+#!/bin/bash
+
+MONEY=/home/mohamedwafy/Desktop/money_cli/money
+
+money_output=$($MONEY)
+
+total="$( \
+  echo "$money_output" | \
+  sed '1!d' | \
+  sed 's/Total: //'
+  )"
+
+allowed_to_spend="$( \
+  echo "$money_output" | \
+  sed '12!d' | \
+  sed 's/Allowed to spend today: //' | \
+  sed -E 's/\x1b\[[0-9]*;?[0-9]+m//g'
+  )"
+
+step="$( \
+  echo "$money_output" | \
+  sed '10!d' | \
+  sed 's/Daily step: //' | \
+  sed -E 's/\x1b\[[0-9]*;?[0-9]+m//g'
+  )"
+
+echo "{ \"full_text\": \"M t$total a$allowed_to_spend s$step\" },"

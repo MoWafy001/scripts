@@ -6,6 +6,7 @@ modules="
   i3message \
   warp \
   lang \
+  money \
   uptime \
   "
 

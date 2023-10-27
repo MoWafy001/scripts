@@ -1,0 +1,11 @@
+#!/bin/bash
+
+MONEY=/home/mohamedwafy/Desktop/money_cli/money
+
+val="$( \
+  $MONEY total | \
+  head -n 1 | \
+  sed 's/Total: //'
+  )"
+
+echo "{ \"full_text\": \"MT $val\" },"

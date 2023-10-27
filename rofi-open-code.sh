@@ -17,6 +17,7 @@ options=(
     Property
     "Zajil API"
     Sukuk
+    fd-backend
   )
 
 options_str=$(join_by '\n' "${options[@]}" )
@@ -34,6 +35,9 @@ case $selection in
     ;;
   ${options[3]}) # Sukuk
     coproc ( code ~/Desktop/sukuk_backend  > /dev/null  2>&1 )
+    ;;
+  ${options[4]}) # fd-backend
+    coproc ( code ~/Desktop/fd-backend  > /dev/null  2>&1 )
     ;;
 esac
 

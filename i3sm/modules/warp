@@ -12,8 +12,6 @@ warpStatus="$( \
 
 # the list of modules to be loaded
 modules=" 
-  warpLat \
-  warpLoss \
   warpStatus \
   "
 
