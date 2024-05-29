@@ -12,32 +12,24 @@ function join_by {
   fi
 }
 
-options=(
-    Auth
-    Property
-    "Zajil API"
-    Sukuk
-    fd-backend
-  )
+# Get folder names in the projects directory
+projects_dir="$HOME/projects"
+options=($(ls "$projects_dir"))
 
 options_str=$(join_by '\n' "${options[@]}" )
 selection=$(echo -e $options_str | rofi -dmenu -p projects)
 
-case $selection in
-  ${options[0]}) # auth
-    coproc ( code ~/Desktop/auth  > /dev/null  2>&1 )
-    ;;
-  ${options[1]}) # property
-    coproc ( code ~/Desktop/property-vertical  > /dev/null  2>&1 )
-    ;;
-  ${options[2]}) # Zajil API
-    coproc ( code ~/Desktop/zajil/api  > /dev/null  2>&1 )
-    ;;
-  ${options[3]}) # Sukuk
-    coproc ( code ~/Desktop/sukuk_backend  > /dev/null  2>&1 )
-    ;;
-  ${options[4]}) # fd-backend
-    coproc ( code ~/Desktop/fd-backend  > /dev/null  2>&1 )
-    ;;
-esac
+# Find the selected folder path
+selected_folder=""
+for option in "${options[@]}"; do
+    if [[ "$option" == "$selection" ]]; then
+        selected_folder="$projects_dir/$option"
+        break
+    fi
+done
+
+# Change directory into the selected folder and open it in a new Terminator session with nvim
+if [ -n "$selected_folder" ]; then
+    cd "$selected_folder" && terminator -e "nvim" > /dev/null 2>&1 &
+fi
 
