@@ -30,6 +30,6 @@ done
 
 # Change directory into the selected folder and open it in a new Terminator session with nvim
 if [ -n "$selected_folder" ]; then
-    cd "$selected_folder" && terminator -e "nvim" > /dev/null 2>&1 &
+    cd "$selected_folder" && terminator -e "source ~/.zshrc && nvim" > /dev/null 2>&1 &
 fi
 

@@ -59,7 +59,7 @@ lock_sc() {
   scrot -d 1 /tmp/locking_screen.png
   convert -blur 0x8 /tmp/locking_screen.png /tmp/screen_blur.png
   # convert -composite /tmp/screen_blur.png ~/Pictures/lockBG.png -gravity South -geometry -20x1200 /tmp/screen.png
-  setxkbmap us,ar
+  setxkbmap us,ara
   # i3lock -i /tmp/screen.png
   i3lock -i /tmp/screen_blur.png
   revert

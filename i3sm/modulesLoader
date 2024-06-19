@@ -6,12 +6,11 @@ modules="
   i3message \
   warp \
   lang \
-  money \
   uptime \
   "
 
 
-MODULES_DIR="~/scripts/i3sm/modules"
+MODULES_DIR="~/projects/scripts/i3sm/modules"
 
 
 # remove extra and trailing spaces

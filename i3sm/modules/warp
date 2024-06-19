@@ -7,8 +7,9 @@ warpStatus="$( \
   )"
 
 
-[ $warpStatus = "Disconnected" ] && exit 0
-
+if [ "$warpStatus" = "Disconnected" ]; then
+  exit 0
+fi
 
 # the list of modules to be loaded
 modules=" 
@@ -16,7 +17,7 @@ modules="
   "
 
 
-MODULES_DIR="~/scripts/i3sm/modules/warpModules"
+MODULES_DIR="~/projects/scripts/i3sm/modules/warpModules"
 
 
 # remove extra and trailing spaces

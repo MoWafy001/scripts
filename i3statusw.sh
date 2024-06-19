@@ -6,6 +6,6 @@ do
   read line
 
   # load modules
-  modulesJSON=$(eval ~/scripts/i3sm/modulesLoader)
+  modulesJSON=$(eval ~/projects/scripts/i3sm/modulesLoader)
   echo ",[$modulesJSON ${line#,\[}" || exit 1
 done)

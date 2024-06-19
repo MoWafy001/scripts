@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VolumeStep="$(cat ~/scripts/config/VolumeStep)"
+VolumeStep="$(cat ~/projects/scripts/config/VolumeStep)"
 
 pactl set-sink-volume @DEFAULT_SINK@ -"$VolumeStep"% && \
-  notify-send $(~/scripts/getCurrVolume.sh) -t 1000
+  notify-send $(~/projects/scripts/getCurrVolume.sh) -t 1000
