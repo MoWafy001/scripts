@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# is caps lock on or off? (1 or 0)
+capslockon=$(xset q | grep "Caps Lock:   on" | wc -l)
+
+# if on, print "Caps Lock: On" else print "Caps Lock: Off"
+if [ $capslockon -eq 1 ]; then # orange
+    echo "{ \"full_text\": \"CL 1\", \"color\": \"#FFA500\" },"
+else # gray
+    echo "{ \"full_text\": \"CL 0\", \"color\": \"#888888\" },"
+fi

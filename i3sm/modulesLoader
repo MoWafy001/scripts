@@ -4,6 +4,7 @@
 # the list of modules to be loaded
 modules=" 
   i3message \
+  capslock \
   warp \
   lang \
   uptime \
