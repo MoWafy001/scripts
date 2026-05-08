@@ -5,6 +5,7 @@
 # Settings
 declare -a LIST_OF_WINDOW_TITLES_THAT_PREVENT_LOCKING=( 
   "YouTube" 
+  "Prime Video" 
 )
 
 # Dependencies

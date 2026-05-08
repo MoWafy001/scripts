@@ -7,7 +7,6 @@ modules="
   capslock \
   warp \
   lang \
-  uptime \
   "
 
 
