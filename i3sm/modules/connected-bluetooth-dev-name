@@ -1,0 +1,8 @@
+#!/bin/sh
+
+n=$(bluetoothctl devices Connected | awk '{print substr($0, index($0,$3))}')
+
+# exit if no name
+[ -z "$n" ] && exit 0
+
+echo "{ \"full_text\": \"BL $n\", \"color\": \"#FF00FF\" },"

@@ -1,8 +1,0 @@
-#!/bin/sh
-
-if systemctl is-active --quiet bluetooth; then
-    devices=$(bluetoothctl devices Connected | cut -d ' ' -f 3- | paste -sd "," - | sed 's/,/, /g')
-    if [ -n "$devices" ]; then
-        echo "{ \"full_text\": \"BL $devices\", \"color\": \"#2196F3\" },"
-    fi
-fi

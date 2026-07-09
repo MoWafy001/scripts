@@ -1,7 +1,42 @@
 #!/bin/sh
 
-message="Caffeine Overflow"
+#message="Caffeine Overflow"
 
-echo "{ \
-\"full_text\": \"$message\", \"color\": \"#FFA501\" \
-},"
+#echo "{ \
+#\"full_text\": \"$message\", \"color\": \"#FFA501\" \
+#},"
+
+# Configuration
+CACHE_FILE="/tmp/i3_useless_fact.txt"
+CACHE_TIME=300 # 5 minutes
+# A list of bright, readable colors
+COLORS=("#FFA501" "#00FF7F" "#00BFFF" "#FF69B4" "#F0E68C" "#ADFF2F" "#87CEEB")
+
+# Function to get a random color from the list
+get_random_color() {
+    printf "%s" "${COLORS[$((RANDOM % ${#COLORS[@]}))]}"
+}
+
+# Check if cache is old or missing
+if [ ! -f "$CACHE_FILE" ] || [ $(($(date +%s) - $(date -r "$CACHE_FILE" +%s))) -gt $CACHE_TIME ]; then
+    # Fetch new fact
+    new_fact=$(curl -s "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en" | jq -r '.text' | tr -d '\n\r' | sed 's/"/\\"/g')
+    
+    if [ -n "$new_fact" ] && [ "$new_fact" != "null" ]; then
+        new_color=$(get_random_color)
+        # Store both fact and color in the cache file, separated by a pipe
+        echo "$new_color|$new_fact" > "$CACHE_FILE"
+    fi
+fi
+
+# Read from cache
+cached_data=$(cat "$CACHE_FILE")
+color=$(echo "$cached_data" | cut -d'|' -f1)
+message=$(echo "$cached_data" | cut -d'|' -f2)
+
+# Fallbacks
+[ -z "$color" ] && color="#FFA501"
+[ -z "$message" ] && message="Caffeine Overflow"
+
+# Output for i3status
+echo "{ \"full_text\": \"$message\", \"color\": \"$color\" },"
