@@ -1,42 +1,89 @@
 #!/bin/sh
 
-#message="Caffeine Overflow"
-
-#echo "{ \
-#\"full_text\": \"$message\", \"color\": \"#FFA501\" \
-#},"
-
 # Configuration
 CACHE_FILE="/tmp/i3_useless_fact.txt"
-CACHE_TIME=300 # 5 minutes
-# A list of bright, readable colors
-COLORS=("#FFA501" "#00FF7F" "#00BFFF" "#FF69B4" "#F0E68C" "#ADFF2F" "#87CEEB")
+CACHE_TIME=60 # 1 minutes
+COLORS=("#FF8C00" "#FF4500" "#FF2D55" "#FF69B4" "#DA70D6" "#BA55D3" "#9370DB" "#5C5CFF" "#00BFFF" "#00FA9A" "#32CD32" "#ADFF2F" "#EEDD82")
 
-# Function to get a random color from the list
 get_random_color() {
     printf "%s" "${COLORS[$((RANDOM % ${#COLORS[@]}))]}"
 }
 
+# --- API Fetchers ---
+# Each function prepends a short source tag to the output.
+
+fetch_useless_fact() {
+    local res
+    res=$(curl -s --max-time 3 "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en" | jq -e -r '.text' 2>/dev/null)
+    [ -n "$res" ] && printf "[Fact] %s" "$res"
+}
+
+fetch_joke() {
+    local res
+    res=$(curl -s --max-time 3 "https://official-joke-api.appspot.com/random_joke" | jq -e -r '"\(.setup) — \(.punchline)"' 2>/dev/null)
+    [ -n "$res" ] && printf "[Joke] %s" "$res"
+}
+
+fetch_quote() {
+    local res
+    # Shortened quote layout to save space: "Quote" - Author
+    res=$(curl -s --max-time 3 "https://zenquotes.io/api/random" | jq -e -r '.[0] | "\"\(.q)\" — \(.a)"' 2>/dev/null)
+    [ -n "$res" ] && printf "[Quote] %s" "$res"
+}
+
+fetch_advice() {
+    local res
+    res=$(curl -s --max-time 3 "https://api.adviceslip.com/advice" | jq -e -r '.slip.advice' 2>/dev/null)
+    [ -n "$res" ] && printf "[Advice] %s" "$res"
+}
+
+fetch_chuck() {
+    local res
+    res=$(curl -s --max-time 3 "https://api.chucknorris.io/jokes/random" | jq -e -r '.value' 2>/dev/null)
+    [ -n "$res" ] && printf "[Chuck] %s" "$res"
+}
+
+fetch_number() {
+    local res
+    res=$(curl -s --max-time 3 "http://numbersapi.com/random/trivia?json" | jq -e -r '.text' 2>/dev/null)
+    [ -n "$res" ] && printf "[Num] %s" "$res"
+}
+
+# --- Main Logic ---
+
 # Check if cache is old or missing
 if [ ! -f "$CACHE_FILE" ] || [ $(($(date +%s) - $(date -r "$CACHE_FILE" +%s))) -gt $CACHE_TIME ]; then
-    # Fetch new fact
-    new_fact=$(curl -s "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en" | jq -r '.text' | tr -d '\n\r' | sed 's/"/\\"/g')
     
-    if [ -n "$new_fact" ] && [ "$new_fact" != "null" ]; then
+    # List of active fetcher functions
+    fetchers=("fetch_useless_fact" "fetch_joke" "fetch_quote" "fetch_advice" "fetch_chuck" "fetch_number")
+    
+    # Pick one randomly
+    random_index=$((RANDOM % ${#fetchers[@]}))
+    selected_fetcher="${fetchers[$random_index]}"
+    
+    # Execute the selected fetcher
+    raw_fact=$($selected_fetcher)
+    
+    if [ -n "$raw_fact" ] && [ "$raw_fact" != "null" ]; then
+        # Clean newlines, carriage returns, escape double quotes for i3bar JSON, and truncate to 90 chars max
+        new_fact=$(echo "$raw_fact" | tr -d '\n\r' | sed 's/"/\\"/g' | cut -c 1-90)
         new_color=$(get_random_color)
-        # Store both fact and color in the cache file, separated by a pipe
+        
+        # Store both color and fact in the cache
         echo "$new_color|$new_fact" > "$CACHE_FILE"
     fi
 fi
 
 # Read from cache
-cached_data=$(cat "$CACHE_FILE")
-color=$(echo "$cached_data" | cut -d'|' -f1)
-message=$(echo "$cached_data" | cut -d'|' -f2)
+if [ -f "$CACHE_FILE" ]; then
+    cached_data=$(cat "$CACHE_FILE")
+    color=$(echo "$cached_data" | cut -d'|' -f1)
+    message=$(echo "$cached_data" | cut -d'|' -f2-)
+fi
 
-# Fallbacks
+# Fallbacks in case fetch failed and no cache existed yet
 [ -z "$color" ] && color="#FFA501"
 [ -z "$message" ] && message="Caffeine Overflow"
 
-# Output for i3status
+# Output for i3status/i3blocks
 echo "{ \"full_text\": \"$message\", \"color\": \"$color\" },"
