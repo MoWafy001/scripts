@@ -3,7 +3,7 @@
 # Configuration
 CACHE_FILE="/tmp/i3_useless_fact.txt"
 CACHE_TIME=60 # 1 minutes
-COLORS=("#FF8C00" "#FF4500" "#FF2D55" "#FF69B4" "#DA70D6" "#BA55D3" "#9370DB" "#5C5CFF" "#00BFFF" "#00FA9A" "#32CD32" "#ADFF2F" "#EEDD82")
+COLORS=("#FF9F00" "#FF5E00" "#FF3366" "#FF66B2" "#E066FF" "#A370FF" "#33CCFF" "#10F0A0" "#39FF14" "#CCFF00" "#FFE600")
 
 get_random_color() {
     printf "%s" "${COLORS[$((RANDOM % ${#COLORS[@]}))]}"
