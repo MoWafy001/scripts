@@ -3,7 +3,7 @@
 # Configuration
 CACHE_FILE="/tmp/i3_useless_fact.txt"
 CACHE_TIME=300 # 5 minutes
-MAX_LEN=80     # Max characters allowed on i3bar before cutting off with "..."
+MAX_LEN=255     # Max characters allowed on i3bar before cutting off with "..."
 COLORS=("#FF9F00" "#FF5E00" "#FF3366" "#FF66B2" "#E066FF" "#A370FF" "#33CCFF" "#10F0A0" "#39FF14" "#CCFF00" "#FFE600")
 
 get_random_color() {
@@ -133,31 +133,43 @@ fetch_dev_joke() {
 
 # --- Main Logic ---
 
+fetch_needed=0
 if [ ! -f "$CACHE_FILE" ] || [ $(($(date +%s) - $(date -r "$CACHE_FILE" +%s))) -gt $CACHE_TIME ]; then
+    fetch_needed=1
+fi
+
+if [ $fetch_needed -eq 1 ]; then
     fetchers=("fetch_useless_fact" "fetch_joke" "fetch_cat_fact" "fetch_advice" "fetch_chuck" "fetch_dev_joke")
     
     random_index=$((RANDOM % ${#fetchers[@]}))
     selected_fetcher="${fetchers[$random_index]}"
     
+    # Capture the output AND the exit status of the fetcher
     raw_fact=$($selected_fetcher)
+    fetch_status=$?
     
-    if [ -n "$raw_fact" ] && [ "$raw_fact" != "null" ]; then
-        # Replace newlines with spaces (for dev jokes), delete carriage returns, escape quotes
+    if [ $fetch_status -eq 0 ] && [ -n "$raw_fact" ] && [ "$raw_fact" != "null" ]; then
+        # Success: Format, Cache, and Display
         cleaned_fact=$(echo "$raw_fact" | tr '\n' ' ' | tr -d '\r' | sed 's/"/\\"/g' | sed 's/  */ /g')
-        new_fact=$(truncate_text "$cleaned_fact")
-        new_color=$(get_random_color)
+        message=$(truncate_text "$cleaned_fact")
+        color=$(get_random_color)
         
-        echo "$new_color|$new_fact" > "$CACHE_FILE"
+        echo "$color|$message" > "$CACHE_FILE"
+    else
+        # Error: Display the error but DO NOT save to cache file
+        message="${raw_fact:-[API Fetch Failed]}"
+        color="#FF0000" # Red indicator for errors
+    fi
+else
+    # Valid cache exists, read from it
+    if [ -f "$CACHE_FILE" ]; then
+        cached_data=$(cat "$CACHE_FILE")
+        color=$(echo "$cached_data" | cut -d'|' -f1)
+        message=$(echo "$cached_data" | cut -d'|' -f2-)
     fi
 fi
 
-# Read from cache
-if [ -f "$CACHE_FILE" ]; then
-    cached_data=$(cat "$CACHE_FILE")
-    color=$(echo "$cached_data" | cut -d'|' -f1)
-    message=$(echo "$cached_data" | cut -d'|' -f2-)
-fi
-
+# Failsafe if everything is empty
 [ -z "$color" ] && color="#FF9F00"
 [ -z "$message" ] && message="Caffeine Overflow"
 
