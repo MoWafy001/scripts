@@ -2,74 +2,151 @@
 
 # Configuration
 CACHE_FILE="/tmp/i3_useless_fact.txt"
-CACHE_TIME=60 # 1 minutes
+CACHE_TIME=300 # 5 minutes
+MAX_LEN=80     # Max characters allowed on i3bar before cutting off with "..."
 COLORS=("#FF9F00" "#FF5E00" "#FF3366" "#FF66B2" "#E066FF" "#A370FF" "#33CCFF" "#10F0A0" "#39FF14" "#CCFF00" "#FFE600")
 
 get_random_color() {
     printf "%s" "${COLORS[$((RANDOM % ${#COLORS[@]}))]}"
 }
 
+# Helper to cleanly truncate text and append "..." if it exceeds MAX_LEN
+truncate_text() {
+    local text="$1"
+    if [ ${#text} -gt $MAX_LEN ]; then
+        # Subtract 3 from MAX_LEN to account for the "..."
+        printf "%s..." "$(echo "$text" | cut -c 1-$((MAX_LEN - 3)))"
+    else
+        printf "%s" "$text"
+    fi
+}
+
 # --- API Fetchers ---
-# Each function prepends a short source tag to the output.
 
 fetch_useless_fact() {
-    local res
-    res=$(curl -s --max-time 3 "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en" | jq -e -r '.text' 2>/dev/null)
-    [ -n "$res" ] && printf "[Fact] %s" "$res"
+    local raw status body res
+    raw=$(curl -s --max-time 3 --write-out "\n%{http_code}" "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en")
+    status=$(echo "$raw" | tail -n 1)
+    body=$(echo "$raw" | sed '$d')
+
+    if [ "$status" -ne 200 ] || [ -z "$body" ]; then
+        printf "[Fact] Conn Err (%s)" "$status"
+        return 1
+    fi
+    res=$(echo "$body" | jq -e -r '.text' 2>/dev/null)
+    if [ $? -ne 0 ] || [ -z "$res" ]; then
+        printf "[Fact] JSON Err"
+        return 1
+    fi
+    printf "[Fact] %s" "$res"
 }
 
 fetch_joke() {
-    local res
-    res=$(curl -s --max-time 3 "https://official-joke-api.appspot.com/random_joke" | jq -e -r '"\(.setup) — \(.punchline)"' 2>/dev/null)
-    [ -n "$res" ] && printf "[Joke] %s" "$res"
+    local raw status body res
+    raw=$(curl -s --max-time 3 --write-out "\n%{http_code}" "https://official-joke-api.appspot.com/random_joke")
+    status=$(echo "$raw" | tail -n 1)
+    body=$(echo "$raw" | sed '$d')
+
+    if [ "$status" -ne 200 ] || [ -z "$body" ]; then
+        printf "[Joke] Conn Err (%s)" "$status"
+        return 1
+    fi
+    res=$(echo "$body" | jq -e -r '"\(.setup) — \(.punchline)"' 2>/dev/null)
+    if [ $? -ne 0 ] || [ -z "$res" ]; then
+        printf "[Joke] JSON Err"
+        return 1
+    fi
+    printf "[Joke] %s" "$res"
 }
 
-fetch_quote() {
-    local res
-    # Shortened quote layout to save space: "Quote" - Author
-    res=$(curl -s --max-time 3 "https://zenquotes.io/api/random" | jq -e -r '.[0] | "\"\(.q)\" — \(.a)"' 2>/dev/null)
-    [ -n "$res" ] && printf "[Quote] %s" "$res"
+fetch_cat_fact() {
+    local raw status body res
+    raw=$(curl -s --max-time 3 --write-out "\n%{http_code}" "https://catfact.ninja/fact")
+    status=$(echo "$raw" | tail -n 1)
+    body=$(echo "$raw" | sed '$d')
+
+    if [ "$status" -ne 200 ] || [ -z "$body" ]; then
+        printf "[Cat] Conn Err (%s)" "$status"
+        return 1
+    fi
+    res=$(echo "$body" | jq -e -r '.fact' 2>/dev/null)
+    if [ $? -ne 0 ] || [ -z "$res" ]; then
+        printf "[Cat] JSON Err"
+        return 1
+    fi
+    printf "[Cat] %s" "$res"
 }
 
 fetch_advice() {
-    local res
-    res=$(curl -s --max-time 3 "https://api.adviceslip.com/advice" | jq -e -r '.slip.advice' 2>/dev/null)
-    [ -n "$res" ] && printf "[Advice] %s" "$res"
+    local raw status body res
+    raw=$(curl -s --max-time 3 --write-out "\n%{http_code}" "https://api.adviceslip.com/advice")
+    status=$(echo "$raw" | tail -n 1)
+    body=$(echo "$raw" | sed '$d')
+
+    if [ "$status" -ne 200 ] || [ -z "$body" ]; then
+        printf "[Advice] Conn Err (%s)" "$status"
+        return 1
+    fi
+    res=$(echo "$body" | jq -e -r '.slip.advice' 2>/dev/null)
+    if [ $? -ne 0 ] || [ -z "$res" ]; then
+        printf "[Advice] JSON Err"
+        return 1
+    fi
+    printf "[Advice] %s" "$res"
 }
 
 fetch_chuck() {
-    local res
-    res=$(curl -s --max-time 3 "https://api.chucknorris.io/jokes/random" | jq -e -r '.value' 2>/dev/null)
-    [ -n "$res" ] && printf "[Chuck] %s" "$res"
+    local raw status body res
+    raw=$(curl -s --max-time 3 --write-out "\n%{http_code}" "https://api.chucknorris.io/jokes/random")
+    status=$(echo "$raw" | tail -n 1)
+    body=$(echo "$raw" | sed '$d')
+
+    if [ "$status" -ne 200 ] || [ -z "$body" ]; then
+        printf "[Chuck] Conn Err (%s)" "$status"
+        return 1
+    fi
+    res=$(echo "$body" | jq -e -r '.value' 2>/dev/null)
+    if [ $? -ne 0 ] || [ -z "$res" ]; then
+        printf "[Chuck] JSON Err"
+        return 1
+    fi
+    printf "[Chuck] %s" "$res"
 }
 
-fetch_number() {
-    local res
-    res=$(curl -s --max-time 3 "http://numbersapi.com/random/trivia?json" | jq -e -r '.text' 2>/dev/null)
-    [ -n "$res" ] && printf "[Num] %s" "$res"
+fetch_dev_joke() {
+    local raw status body res
+    raw=$(curl -s --max-time 3 --write-out "\n%{http_code}" "https://v2.jokeapi.dev/joke/Programming?type=single")
+    status=$(echo "$raw" | tail -n 1)
+    body=$(echo "$raw" | sed '$d')
+
+    if [ "$status" -ne 200 ] || [ -z "$body" ]; then
+        printf "[Dev] Conn Err (%s)" "$status"
+        return 1
+    fi
+    res=$(echo "$body" | jq -e -r '.joke' 2>/dev/null)
+    if [ $? -ne 0 ] || [ -z "$res" ]; then
+        printf "[Dev] JSON Err"
+        return 1
+    fi
+    printf "[Dev] %s" "$res"
 }
 
 # --- Main Logic ---
 
-# Check if cache is old or missing
 if [ ! -f "$CACHE_FILE" ] || [ $(($(date +%s) - $(date -r "$CACHE_FILE" +%s))) -gt $CACHE_TIME ]; then
+    fetchers=("fetch_useless_fact" "fetch_joke" "fetch_cat_fact" "fetch_advice" "fetch_chuck" "fetch_dev_joke")
     
-    # List of active fetcher functions
-    fetchers=("fetch_useless_fact" "fetch_joke" "fetch_quote" "fetch_advice" "fetch_chuck" "fetch_number")
-    
-    # Pick one randomly
     random_index=$((RANDOM % ${#fetchers[@]}))
     selected_fetcher="${fetchers[$random_index]}"
     
-    # Execute the selected fetcher
     raw_fact=$($selected_fetcher)
     
     if [ -n "$raw_fact" ] && [ "$raw_fact" != "null" ]; then
-        # Clean newlines, carriage returns, escape double quotes for i3bar JSON, and truncate to 90 chars max
-        new_fact=$(echo "$raw_fact" | tr -d '\n\r' | sed 's/"/\\"/g' | cut -c 1-90)
+        # Replace newlines with spaces (for dev jokes), delete carriage returns, escape quotes
+        cleaned_fact=$(echo "$raw_fact" | tr '\n' ' ' | tr -d '\r' | sed 's/"/\\"/g' | sed 's/  */ /g')
+        new_fact=$(truncate_text "$cleaned_fact")
         new_color=$(get_random_color)
         
-        # Store both color and fact in the cache
         echo "$new_color|$new_fact" > "$CACHE_FILE"
     fi
 fi
@@ -81,9 +158,7 @@ if [ -f "$CACHE_FILE" ]; then
     message=$(echo "$cached_data" | cut -d'|' -f2-)
 fi
 
-# Fallbacks in case fetch failed and no cache existed yet
-[ -z "$color" ] && color="#FFA501"
+[ -z "$color" ] && color="#FF9F00"
 [ -z "$message" ] && message="Caffeine Overflow"
 
-# Output for i3status/i3blocks
 echo "{ \"full_text\": \"$message\", \"color\": \"$color\" },"
