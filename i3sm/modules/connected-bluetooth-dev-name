@@ -1,8 +1,17 @@
 #!/bin/sh
 
-n=$(bluetoothctl devices Connected | awk '{print substr($0, index($0,$3))}')
+# 1. Strip ANSI escape codes using perl
+# 2. Strip "Device <MAC> " prefix
+# 3. Join multiple connected devices with ", "
+n=$(bluetoothctl devices Connected \
+  | perl -pe 's/\e\[[0-9;]*[mGKH]//g' \
+  | sed -E 's/^Device [^ ]+ //' \
+  | paste -sd ', ' -)
 
-# exit if no name
+# Exit if empty
 [ -z "$n" ] && exit 0
 
-echo "{ \"full_text\": \"BL $n\", \"color\": \"#FF00FF\" },"
+# Escape quotes and backslashes for JSON safety
+n_safe=$(printf '%s' "$n" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr -d '\r\n')
+
+echo "{ \"full_text\": \"bl $n_safe\", \"color\": \"#ff00ff\" },"
