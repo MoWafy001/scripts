@@ -1,0 +1,159 @@
+// Waybar - replaces i3bar + ~/scripts/i3statusw.sh under sway
+// The i3 setup still uses i3bar/i3status; this file only affects sway.
+{
+    "layer": "top",
+    "position": "bottom",
+    "height": 30,
+    "spacing": 6,
+    "margin-top": 6,
+    "margin-left": 10,
+    "margin-right": 10,
+
+    "modules-left":   ["sway/workspaces", "sway/mode", "sway/scratchpad"],
+    "modules-center": ["custom/fact"],
+    "modules-right":  [
+        "custom/capslock",
+        "custom/bluetooth",
+        "custom/nightmode",
+        "backlight",
+        "pulseaudio",
+        "memory",
+        "disk",
+        "network",
+        "battery",
+        //"custom/uptime",
+        "sway/language",
+        "clock",
+        "tray"
+    ],
+
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": false,
+        "format": "{name}"
+    },
+
+    "sway/mode": {
+        "format": "<span style=\"italic\">{}</span>"
+    },
+
+    "sway/scratchpad": {
+        "format": "{icon} {count}",
+        "format-icons": ["", ""],
+        "show-empty": false,
+        "tooltip": true,
+        "tooltip-format": "{app}: {title}"
+    },
+
+    // Replaces the i3sm `lang` module (setxkbmap is X11-only).
+    "sway/language": {
+        "format": "󰌌 {short}",
+        "tooltip-format": "{long}",
+        "on-click": "~/scripts/chlang.sh"
+    },
+
+    "custom/fact": {
+        "exec": "~/scripts/waybar/fact.sh",
+        "return-type": "json",
+        "interval": 1,
+        "max-length": 120,
+        "escape": false
+    },
+
+    "custom/bluetooth": {
+        "exec": "~/scripts/waybar/bluetooth.sh",
+        "return-type": "json",
+        "interval": 10,
+        "on-click": "blueman-manager"
+    },
+
+    "custom/capslock": {
+        "exec": "~/scripts/waybar/capslock.sh",
+        "return-type": "json",
+        "interval": 1
+    },
+
+    "custom/nightmode": {
+        "exec": "~/scripts/waybar/nightmode.sh",
+        "return-type": "json",
+        "interval": 30,
+        "signal": 2,
+        "on-click": "~/scripts/nightmodeON.sh",
+        "on-click-right": "~/scripts/nightmodeOFF.sh"
+    },
+
+    "custom/uptime": {
+        "exec": "~/scripts/waybar/uptime.sh",
+        "return-type": "json",
+        "interval": 60
+    },
+
+    "backlight": {
+        "format": "{icon} {percent}%",
+        "format-icons": ["󰃞", "󰃟", "󰃠"],
+        "on-scroll-up":   "~/scripts/brightness.sh Up",
+        "on-scroll-down": "~/scripts/brightness.sh Down"
+    },
+
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": "󰝟 muted",
+        "format-bluetooth": "󰂰 {volume}%",
+        "format-icons": { "headphone": "󰋋", "headset": "󰋎", "default": ["󰕿", "󰖀", "󰕾"] },
+        "on-click":        "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+        "on-click-right":  "pavucontrol",
+        "on-scroll-up":    "~/scripts/volumeUp.sh 150",
+        "on-scroll-down":  "~/scripts/volumeDown.sh"
+    },
+
+    "memory": {
+        "format": "Mem {percentage}%",
+        "tooltip-format": "{used:0.1f}G used / {total:0.1f}G"
+    },
+
+    "disk": {
+        "path": "/",
+        "format": "󰋊 {free}",
+        "tooltip-format": "{used} used of {total} on {path}"
+    },
+
+    "network": {
+        "format-wifi":      "󰖩 {essid} {signalStrength}%",
+        "format-ethernet":  "󰈀 {ipaddr}",
+        "format-linked":    "󰈀 no IP",
+        "format-disconnected": "󰖪 offline",
+        "tooltip-format":   "{ifname}: {ipaddr}/{cidr}",
+        "on-click": "nm-connection-editor"
+    },
+
+    "battery": {
+        "states": { "warning": 20, "critical": 10 },
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged":  "󰚥 {capacity}%",
+        "format-icons": ["󰁺", "󰁼", "󰁾", "󰂀", "󰂂", "󰁹"],
+        "tooltip-format": "{timeTo}  ({power:0.1f}W)"
+    },
+
+    "clock": {
+        "format": "󰥔 {:%a %d %b  %I:%M:%S %p}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+	"interval": 1,
+        "calendar": {
+            "mode": "month",
+            "on-scroll": 1,
+            "format": {
+                "months":  "<span color='#4dd6d6'><b>{}</b></span>",
+                "days":    "<span color='#cfeeee'>{}</span>",
+                "weekdays":"<span color='#2bb3b3'><b>{}</b></span>",
+                "today":   "<span color='#d75f5f'><b>{}</b></span>"
+            }
+        },
+        "actions": { "on-click-right": "mode", "on-scroll-up": "shift_up", "on-scroll-down": "shift_down" }
+    },
+
+    "tray": {
+        "icon-size": 16,
+        "spacing": 8
+    }
+}

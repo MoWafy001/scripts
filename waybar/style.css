@@ -1,0 +1,168 @@
+/* ======================================================
+   Waybar - teal theme, matching ~/.config/sway/config
+   ====================================================== */
+
+@define-color bg          #000000;
+@define-color bg-alt      #132b2b;
+@define-color fg          #cfeeee;
+@define-color fg-dim      #8fbebe;
+@define-color teal        #2bb3b3;
+@define-color teal-dark   #1f8f8f;
+@define-color teal-bright #4dd6d6;
+@define-color urgent      #d75f5f;
+@define-color border      #000000;
+
+/*
+@define-color bg          #0f1f1f;
+@define-color border      #1f3f3f;
+*/
+
+* {
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: @fg;
+}
+
+window#waybar.hidden { opacity: 0.2; }
+
+/* Each module group gets its own rounded pill */
+.modules-left,
+.modules-center,
+.modules-right {
+    background-color: @bg;
+    border: 1px solid @border;
+    border-radius: 10px;
+    padding: 0 4px;
+}
+
+#workspaces button {
+    padding: 0 9px;
+    margin: 3px 2px;
+    color: @fg-dim;
+    background-color: @bg-alt;
+    border-radius: 7px;
+    border: 1px solid transparent;
+}
+
+#workspaces button:hover {
+    background-color: @teal-dark;
+    color: @bg;
+}
+
+#workspaces button.focused,
+#workspaces button.active {
+    background-color: @teal;
+    color: @bg;
+    border: 1px solid @teal-bright;
+    font-weight: bold;
+}
+
+#workspaces button.urgent {
+    background-color: @urgent;
+    color: @fg;
+}
+
+#mode {
+    padding: 0 10px;
+    margin: 3px 2px;
+    background-color: @urgent;
+    color: @fg;
+    border-radius: 7px;
+}
+
+#scratchpad { padding: 0 8px; color: @fg-dim; }
+#scratchpad.empty { background: transparent; }
+
+/* Right-hand modules */
+#custom-fact,
+#custom-bluetooth,
+#custom-capslock,
+#custom-nightmode,
+#custom-uptime,
+#language,
+#backlight,
+#pulseaudio,
+#memory,
+#disk,
+#network,
+#battery,
+#clock,
+#tray {
+    padding: 0 9px;
+    margin: 3px 1px;
+    color: @fg;
+    background-color: @bg-alt;
+    border-radius: 7px;
+}
+
+#language{
+    min-width: 40px;
+}
+
+#custom-fact {
+    background-color: transparent;
+    color: @fg-dim;
+    font-style: italic;
+}
+
+#clock {
+    background-color: @teal;
+    color: @bg;
+    font-weight: bold;
+}
+
+#language       { color: @teal-bright; font-weight: bold; }
+#backlight      { color: #e6c384; }
+#pulseaudio     { color: @teal-bright; }
+#pulseaudio.muted { color: @fg-dim; }
+#memory         { color: #a0d6a0; }
+#disk           { color: @fg-dim; }
+#network        { color: @teal-bright; }
+#network.disconnected { color: @urgent; }
+
+#custom-bluetooth.connected { color: #9f8fff; }
+#custom-nightmode.on        { color: #e6c384; }
+#custom-nightmode.off       { color: @fg-dim; }
+#custom-uptime              { color: @fg-dim; }
+
+/* Caps lock: hidden when off, loud when on */
+#custom-capslock.off {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+}
+#custom-capslock.on {
+    background-color: #FFA500;
+    color: @bg;
+    font-weight: bold;
+}
+
+#battery          { color: #a0d6a0; }
+#battery.charging { color: @teal-bright; }
+#battery.warning:not(.charging)  { color: #e6c384; }
+#battery.critical:not(.charging) {
+    background-color: @urgent;
+    color: @fg;
+    animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+    to { background-color: @bg-alt; color: @urgent; }
+}
+
+#tray { background-color: @bg-alt; }
+#tray > .needs-attention { background-color: @urgent; }
+
+tooltip {
+    background-color: @bg;
+    border: 1px solid @teal-dark;
+    border-radius: 8px;
+}
+tooltip label { color: @fg; padding: 4px; }
