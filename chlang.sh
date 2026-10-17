@@ -1,13 +1,16 @@
-#!/usr/bin/bash
-layout=$(
-  setxkbmap -query | 
-    grep "layout" |
-      sed "s/layout:    //"
-)
+#!/usr/bin/env sh
+#
+# Session dispatcher. Picks the X11 or Wayland implementation at runtime so
+# the same path works from both ~/.config/i3/config and ~/.config/sway/config.
+#
+#   X11 / i3   -> ~/scripts/x11/chlang.sh      (original, unchanged)
+#   Wayland/sway -> ~/scripts/wayland/chlang.sh
+#
+# Argument handling differs per backend - see each file.
 
-if [ $layout == 'us,ara' ];
-then
-  setxkbmap ara,us
+if [ -n "${SWAYSOCK:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ] || \
+   [ "${XDG_SESSION_TYPE:-}" = "wayland" ]; then
+    exec "$HOME/scripts/wayland/chlang.sh" "$@"
 else
-  setxkbmap us,ara
+    exec "$HOME/scripts/x11/chlang.sh" "$@"
 fi

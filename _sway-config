@@ -1,0 +1,320 @@
+# ============================================================
+# Sway config - ported from i3.
+# The i3/X11 setup is untouched and still lives at ~/.config/i3/config;
+# both sessions share ~/scripts via per-session dispatchers
+# (~/scripts/<name> -> ~/scripts/{x11,wayland}/<name>).
+# Snapshot of this file is kept at ~/scripts/_sway-config
+# Reference: man 5 sway, man 5 sway-input, man 5 sway-output
+# ============================================================
+
+set $mod Mod4
+set $alt Mod1
+
+#set $term konsole
+set $term terminator
+set $menu rofi -show drun
+set $runner rofi -show run
+set $lock ~/scripts/lockscreen.sh
+
+font pango:JetBrainsMono Nerd Font 10
+
+# ------------------------------------------------------------
+# Input devices  (replaces setxkbmap / xinput)
+# ------------------------------------------------------------
+input type:keyboard {
+    xkb_layout "us,ara"
+    # uncomment for a hardware layout toggle in addition to $mod+Tab:
+    # xkb_options "grp:alt_shift_toggle"
+    repeat_delay 300
+    repeat_rate 40
+}
+
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+    dwt enabled
+    scroll_method two_finger
+    middle_emulation enabled
+}
+
+focus_follows_mouse no
+mouse_warping none
+
+# ------------------------------------------------------------
+# Output  (replaces xrandr)
+# ------------------------------------------------------------
+# List names with: swaymsg -t get_outputs
+# output eDP-1 resolution 1920x1080 position 0,0 scale 1
+# output * bg ~/Pictures/wallpaper.png fill      # needs swaybg
+
+# ------------------------------------------------------------
+# Autostart
+# ------------------------------------------------------------
+# Hand the Wayland session to systemd + dbus so portals, the tray
+# and user services see WAYLAND_DISPLAY. Must come first.
+# NOTE: XDG_CURRENT_DESKTOP is deliberately NOT forced here - SDDM already
+# sets it to "sway:wlroots" from /usr/share/wayland-sessions/sway.desktop.
+exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK
+exec hash dbus-update-activation-environment 2>/dev/null && \
+     dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK
+
+# systemd --user outlives logout, and xdg-desktop-portal picks its backends
+# only once at startup. Without this, a portal left running by the previous
+# session (Plasma <-> sway) keeps serving the wrong backend set.
+exec /home/mohamedwafy/.local/bin/xdp-session-reset
+
+# KNOWN LIMITATION: KDE Connect input sharing does not work under sway.
+#   kdeconnect_mousepad.so needs the org.freedesktop.portal.RemoteDesktop
+#   interface. SDDM starts sway as XDG_CURRENT_DESKTOP=sway:wlroots, so the
+#   portal loads /usr/share/xdg-desktop-portal/sway-portals.conf (default=gtk),
+#   and neither xdg-desktop-portal-gtk nor -wlr implements RemoteDesktop.
+#   Screenshots and screen sharing are unaffected (-wlr handles those).
+#   To enable it later: install xdg-desktop-portal-luminous (AUR; implements
+#   RemoteDesktop over zwlr_virtual_pointer_v1 + zwp_virtual_keyboard_v1,
+#   which wlroots 0.20 provides) and create
+#   ~/.config/xdg-desktop-portal/sway-portals.conf containing:
+#       [preferred]
+#       default=gtk
+#       org.freedesktop.impl.portal.ScreenCast=wlr
+#       org.freedesktop.impl.portal.Screenshot=wlr
+#       org.freedesktop.impl.portal.RemoteDesktop=luminous
+#       org.freedesktop.impl.portal.Inhibit=none
+#   That file is read before the system one and only applies to sway.
+
+exec nm-applet --indicator
+exec ~/scripts/i3-battery-popup/i3-battery-popup -n -D -L 20 -l 10
+
+exec_always gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+
+# night mode on start
+exec ~/scripts/nightmodeON.sh
+
+# Idle + lock  (replaces `xset 600` and xss-lock)
+# 10 min -> lock, 15 min -> screens off, and lock before suspend.
+exec_always pkill -x swayidle; swayidle -w timeout 600 "$lock" timeout 900 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep "$lock"
+
+# Removed from the i3 config (X11-only, no equivalent needed under sway):
+#   dex --autostart --environment i3   (not installed; use systemd user units)
+#   xset 600 / xss-lock                (-> swayidle above)
+#   picom                              (sway IS the compositor)
+
+# ------------------------------------------------------------
+# Window management
+# ------------------------------------------------------------
+floating_modifier $mod normal
+
+bindsym $mod+Return exec $term
+bindsym --to-code $mod+Shift+q kill
+
+bindsym --to-code $mod+d exec $menu
+bindsym --to-code $alt+d exec $runner
+bindsym --to-code $mod+Shift+d exec rofi -show window
+
+# change focus
+bindsym --to-code $mod+j focus left
+bindsym --to-code $mod+k focus down
+bindsym --to-code $mod+l focus up
+bindsym --to-code $mod+semicolon focus right
+
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# move focused window
+bindsym --to-code $mod+Shift+j move left
+bindsym --to-code $mod+Shift+k move down
+bindsym --to-code $mod+Shift+l move up
+bindsym --to-code $mod+Shift+semicolon move right
+
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# move current container to the next display
+bindsym --to-code $mod+Shift+period move container to output next
+
+# move current workspace to the next display
+bindsym $mod+Control+Shift+Right move workspace to output right
+bindsym $mod+Control+Shift+Left move workspace to output left
+
+# split / layout
+bindsym --to-code $mod+h split h
+bindsym --to-code $mod+v split v
+bindsym --to-code $mod+f fullscreen toggle
+bindsym --to-code $mod+s layout stacking
+bindsym --to-code $mod+w layout tabbed
+bindsym --to-code $mod+e layout toggle split
+
+bindsym --to-code $mod+Shift+space floating toggle
+bindsym --to-code $mod+space focus mode_toggle
+bindsym --to-code $mod+a focus parent
+
+# ------------------------------------------------------------
+# Workspaces
+# ------------------------------------------------------------
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+
+bindsym --to-code $mod+1 workspace number $ws1
+bindsym --to-code $mod+2 workspace number $ws2
+bindsym --to-code $mod+3 workspace number $ws3
+bindsym --to-code $mod+4 workspace number $ws4
+bindsym --to-code $mod+5 workspace number $ws5
+bindsym --to-code $mod+6 workspace number $ws6
+bindsym --to-code $mod+7 workspace number $ws7
+bindsym --to-code $mod+8 workspace number $ws8
+bindsym --to-code $mod+9 workspace number $ws9
+bindsym --to-code $mod+0 workspace number $ws10
+
+bindsym --to-code $mod+Shift+1 move container to workspace number $ws1
+bindsym --to-code $mod+Shift+2 move container to workspace number $ws2
+bindsym --to-code $mod+Shift+3 move container to workspace number $ws3
+bindsym --to-code $mod+Shift+4 move container to workspace number $ws4
+bindsym --to-code $mod+Shift+5 move container to workspace number $ws5
+bindsym --to-code $mod+Shift+6 move container to workspace number $ws6
+bindsym --to-code $mod+Shift+7 move container to workspace number $ws7
+bindsym --to-code $mod+Shift+8 move container to workspace number $ws8
+bindsym --to-code $mod+Shift+9 move container to workspace number $ws9
+bindsym --to-code $mod+Shift+0 move container to workspace number $ws10
+
+# ------------------------------------------------------------
+# Session
+# ------------------------------------------------------------
+bindsym --to-code $mod+Shift+c reload
+# sway has no in-place restart; reload covers config changes.
+bindsym --to-code $mod+Shift+r reload
+bindsym --to-code $mod+Shift+e exec swaynag -t warning \
+    -m 'You pressed the exit shortcut. Exit sway and end your Wayland session?' \
+    -B 'Yes, exit sway' 'swaymsg exit'
+
+# ------------------------------------------------------------
+# Resize mode
+# ------------------------------------------------------------
+mode "resize" {
+    bindsym --to-code j         resize shrink width 10 px or 10 ppt
+    bindsym --to-code k         resize grow   height 10 px or 10 ppt
+    bindsym --to-code l         resize shrink height 10 px or 10 ppt
+    bindsym --to-code semicolon resize grow   width 10 px or 10 ppt
+
+    bindsym Left  resize shrink width 10 px or 10 ppt
+    bindsym Down  resize grow   height 10 px or 10 ppt
+    bindsym Up    resize shrink height 10 px or 10 ppt
+    bindsym Right resize grow   width 10 px or 10 ppt
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+    bindsym --to-code $mod+r mode "default"
+}
+bindsym --to-code $mod+r mode "resize"
+
+###############
+## Key Binds ##
+###############
+
+# Volume
+bindsym XF86AudioRaiseVolume exec ~/scripts/volumeUp.sh 150
+bindsym XF86AudioLowerVolume exec ~/scripts/volumeDown.sh
+bindsym XF86AudioMute        exec pactl set-sink-mute   @DEFAULT_SINK@   toggle
+bindsym XF86AudioMicMute     exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+# (waybar's pulseaudio module refreshes itself, so no $refresh_i3status needed)
+
+# Media
+bindsym XF86AudioPlay exec playerctl play-pause
+bindsym XF86AudioNext exec playerctl next
+bindsym XF86AudioPrev exec playerctl previous
+
+# Brightness
+bindsym XF86MonBrightnessDown exec ~/scripts/brightness.sh Down
+bindsym XF86MonBrightnessUp   exec ~/scripts/brightness.sh Up
+
+# Screenshot  (grim + slurp, replaces scrot + xclip)
+bindsym --release Print      exec ~/scripts/screenshot.sh region
+bindsym --release $mod+Print exec ~/scripts/screenshot.sh full
+bindsym --release Shift+Print exec ~/scripts/screenshot.sh window
+
+# Keyboard layout toggle  (swaymsg xkb_switch_layout, replaces setxkbmap)
+bindsym $mod+Tab exec ~/scripts/chlang.sh
+
+# Lock screen
+bindsym --to-code $mod+$alt+l exec $lock
+bindsym $mod+$alt+Arabic_meem exec $lock
+
+# Night mode
+bindsym --to-code $mod+n       exec ~/scripts/nightmodeON.sh
+bindsym --to-code $mod+Shift+n exec ~/scripts/nightmodeOFF.sh
+
+## Open Apps ## [Shift + Alt + {key}]
+bindsym --to-code Shift+$alt+s exec notify-send "Starting Spotify..." -t 1000 && xdg-open https://open.spotify.com
+bindsym --to-code Shift+$alt+f exec notify-send "Starting Firefox..." -t 1000 && firefox
+bindsym --to-code Shift+$alt+c exec ~/scripts/rofi-open-code.sh
+
+# ======================
+# Teal-based theme
+# ======================
+gaps outer 10
+gaps inner 20
+default_border pixel 2
+default_floating_border pixel 2
+hide_edge_borders smart
+smart_borders on
+
+# Base colors
+set $bg            #0f1f1f
+set $bg-alt        #132b2b
+set $fg            #cfeeee
+set $fg-dim        #8fbebe
+
+# Accent colors (teal)
+set $teal          #2bb3b3
+set $teal-dark     #1f8f8f
+set $teal-bright   #4dd6d6
+
+# State colors
+set $urgent        #d75f5f
+set $inactive      #1a3a3a
+set $border        #1f3f3f
+
+# class                 border        background    text        indicator     child_border
+client.focused          $teal         $bg           $fg         $teal-bright  $teal
+client.focused_inactive $border       $bg-alt       $fg-dim     $border       $border
+client.unfocused        $border       $bg-alt       $fg-dim     $border       $border
+client.urgent           $urgent       $urgent       $fg         $urgent       $urgent
+client.placeholder      $border       $bg-alt       $fg-dim     $border       $border
+client.background       $bg
+
+# ------------------------------------------------------------
+# Bar: waybar  (replaces i3bar + ~/scripts/i3statusw.sh)
+# Styling now lives in ~/.config/waybar/{config.jsonc,style.css}
+# ------------------------------------------------------------
+bar {
+    swaybar_command waybar
+}
+
+# ------------------------------------------------------------
+# Window rules
+# app_id  -> native Wayland clients   (swaymsg -t get_tree to find it)
+# class   -> XWayland clients
+# ------------------------------------------------------------
+for_window [class="(?i)dbeaver"]  floating enable
+for_window [app_id="(?i)dbeaver"] floating enable
+
+no_focus [class="(?i)dbeaver" window_type="dialog"]
+# window_type / window_role only match XWayland views:
+no_focus [window_type="tooltip"]
+no_focus [window_role="pop-up"]
+
+# Inhibit idle while anything is fullscreen (video, meetings)
+for_window [class=".*"]   inhibit_idle fullscreen
+for_window [app_id=".*"]  inhibit_idle fullscreen
+
+include /etc/sway/config.d/*

@@ -1,10 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env sh
+#
+# Session dispatcher. Picks the X11 or Wayland implementation at runtime so
+# the same path works from both ~/.config/i3/config and ~/.config/sway/config.
+#
+#   X11 / i3   -> ~/scripts/x11/screenshot.sh      (original, unchanged)
+#   Wayland/sway -> ~/scripts/wayland/screenshot.sh
+#
+# Argument handling differs per backend - see each file.
 
-extraArgs=( "$@" )
-extraArgs="${extraArgs[@]:1}"
-msg=$1
-
-scrot $extraArgs -F /tmp/screenshot.png && \
-  notify-send -t 1000 "$msg" && \
-  xclip -selection clipbloard -t image/png -i /tmp/screenshot.png && \
-  rm /tmp/screenshot.png
+if [ -n "${SWAYSOCK:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ] || \
+   [ "${XDG_SESSION_TYPE:-}" = "wayland" ]; then
+    exec "$HOME/scripts/wayland/screenshot.sh" "$@"
+else
+    exec "$HOME/scripts/x11/screenshot.sh" "$@"
+fi

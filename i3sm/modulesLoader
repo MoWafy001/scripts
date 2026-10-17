@@ -5,10 +5,9 @@
 modules=" 
   i3message \
   capslock \
-  warp \
   lang \
-  uptime \
   connected-bluetooth-dev-name \
+  uptime \
   "
 
 

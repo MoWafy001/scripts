@@ -66,6 +66,13 @@ bindsym $mod+k focus down
 bindsym $mod+l focus up
 bindsym $mod+semicolon focus right
 
+# Move current container/window to the next display
+bindsym $mod+Shift+Greater move container to output next
+
+# Move current workspace to the next display
+bindsym $mod+Control+Shift+Right move workspace to output right
+bindsym $mod+Control+Shift+Left move workspace to output left
+
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
 bindsym $mod+Down focus down
@@ -183,10 +190,10 @@ bindsym $mod+r mode "resize"
 
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
-bar {
+#bar {
         #status_command i3status
-        status_command ~/scripts/i3statusw.sh
-}
+#        status_command ~/scripts/i3statusw.sh
+#}
 
 exec --no-startup-id ~/scripts/i3-battery-popup/i3-battery-popup -n -D -L 20 -l 10
 
@@ -245,3 +252,63 @@ bindsym Shift+mod1+f exec --no-startup-id notify-send "Starting Firefox..." -t 1
 
 # open a code project
 bindsym Shift+mod1+c exec ~/scripts/rofi-open-code.sh
+
+gaps outer 10
+gaps inner 20
+default_border pixel 2
+hide_edge_borders smart
+
+# ======================
+# Teal-based i3 Theme
+# ======================
+
+# Base colors
+set $bg            #0f1f1f
+set $bg-alt        #132b2b
+set $fg            #cfeeee
+set $fg-dim        #8fbebe
+
+# Accent colors (teal)
+set $teal          #2bb3b3
+set $teal-dark     #1f8f8f
+set $teal-bright   #4dd6d6
+
+# State colors
+set $urgent        #d75f5f
+set $inactive      #1a3a3a
+set $border        #1f3f3f
+
+# ----------------------
+# Window colors
+# class                 border        background    text        indicator     child_border
+client.focused          $teal         $bg           $fg         $teal-bright  $teal
+client.focused_inactive $border       $bg-alt       $fg-dim     $border       $border
+client.unfocused        $border       $bg-alt       $fg-dim     $border       $border
+client.urgent           $urgent       $urgent       $fg         $urgent       $urgent
+client.placeholder     $border       $bg-alt       $fg-dim     $border       $border
+
+# ----------------------
+# Bar colors (i3bar)
+bar {
+    status_command ~/scripts/i3statusw.sh
+    colors {
+        #background $bg
+        statusline $fg
+        separator  $border
+
+        focused_workspace   $teal       $bg         $fg
+        active_workspace    $teal-dark  $bg         $fg
+        inactive_workspace  $bg-alt     $bg-alt     $fg-dim
+        urgent_workspace    $urgent     $urgent     $fg
+    }
+}
+
+exec_always --no-startup-id picom -b --backend xrender
+
+focus_follows_mouse no
+mouse_warping none
+
+for_window [class="(?i)dbeaver"] floating enable
+no_focus [class="(?i)dbeaver" window_type="dialog"]
+no_focus [window_type="tooltip"]
+no_focus [window_role="pop-up"]

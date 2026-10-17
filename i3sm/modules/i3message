@@ -2,7 +2,7 @@
 
 # Configuration
 CACHE_FILE="/tmp/i3_useless_fact.txt"
-CACHE_TIME=300 # 5 minutes
+CACHE_TIME=60
 MAX_LEN=255     # Max characters allowed on i3bar before cutting off with "..."
 COLORS=("#FF9F00" "#FF5E00" "#FF3366" "#FF66B2" "#E066FF" "#A370FF" "#33CCFF" "#10F0A0" "#39FF14" "#CCFF00" "#FFE600")
 
